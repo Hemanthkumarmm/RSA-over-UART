@@ -16,6 +16,8 @@ This project implements RSA—an asymmetric key cryptographic algorithm—direct
 - UART TX/RX modules
 <img width="1600" height="786" alt="Screenshot-14" src="https://github.com/user-attachments/assets/a03c5cd9-1745-4e71-ae3d-e9432891db54" />
 
+## Tool used : Xilinx ISE
+## Language used : Verilog
 
 All modules are written in Verilog and synthesized on a Spartan-3 FPGA, demonstrating successful encrypted transmission and recovery of plaintext.
 This hardware design ensures confidentiality, integrity, and secure serial data transfer for embedded applications.
