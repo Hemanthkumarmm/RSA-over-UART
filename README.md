@@ -131,7 +131,65 @@ Decrypted = 78
 
 ---
 
-## Synthesis and Resource Utilization
+## RTL Generation and Synthesis Flow
+
+The complete RSA-over-UART system was described in **Verilog HDL** and synthesized using **Xilinx ISE** targeting the **Spartan-3 XC3S400-TQ144** FPGA.
+
+### RTL Generation
+
+The synthesis tool generates the RTL netlist and schematic for the integrated design:
+
+- **RTL Top-Level Output File Name:** `rsa3.ngr`  
+- **Top-Level Design Name:** `rsa3`  
+- **Output Format:** NGC  
+- **Optimization Goal:** Speed  
+- **Keep Hierarchy:** No (hierarchy flattened for optimization)
+
+The RTL schematic shows the interconnection of the following major blocks:
+
+- RSA Key Generator  
+- RSA Encryption (Modular Exponentiation)  
+- RSA Decryption  
+- UART Transmitter (TX)  
+- UART Receiver (RX)  
+- Control logic and data path multiplexing  
+
+These modules are structurally connected to form a fully pipelined **RSA over UART** communication system in hardware.
+
+### Cell / Component Usage (RTL View)
+
+From the RTL-level breakdown, the design includes:
+<img width="404" height="650" alt="image" src="https://github.com/user-attachments/assets/c065b5ec-7401-4be4-a4a8-3ddb4c871c7a" />
+
+
+- **128 × 128-bit Multiplier** – 1  
+- **128-bit Subtractors** – 4  
+- **32-bit Adders** – 2  
+- **128-bit Latches** – 2  
+- **32-bit Latch** – 1  
+- **32-bit Comparators (≥)** – 1  
+- **32-bit Comparators (>)** – 2  
+- **32-bit 4-to-1 Multiplexers** – 2  
+
+These arithmetic and control elements implement the **modular exponentiation** and **comparison logic** required for the RSA algorithm, while the UART blocks handle serial framing and data transfer.
+
+---
+
+## Synthesis Summary
+
+After RTL generation, the design is synthesized with the following characteristics:
+
+- **Device:** Xilinx Spartan-3 XC3S400-TQ144  
+- **IOs:** 386 (reported at detailed RTL level)  
+- **Clock Buffer:** 1× BUFGP (global clock buffer)  
+- **Flip-Flops/Latches:** 128 (LD – Latch with Data input)  
+- **GND / VCC primitives:** Present as standard FPGA resources  
+
+The RTL and post-synthesis schematics confirm correct module integration and timing feasibility for **real-time secure UART communication** using RSA.
+
+---
+
+## Resource Utilization
 Based on Spartan-3 XC3S400-TQ144
 
 
