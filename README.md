@@ -14,6 +14,8 @@ This project implements RSA—an asymmetric key cryptographic algorithm—direct
 - RSA encryption
 - RSA decryption
 - UART TX/RX modules
+<img width="1600" height="786" alt="Screenshot-14" src="https://github.com/user-attachments/assets/a03c5cd9-1745-4e71-ae3d-e9432891db54" />
+
 
 All modules are written in Verilog and synthesized on a Spartan-3 FPGA, demonstrating successful encrypted transmission and recovery of plaintext.
 This hardware design ensures confidentiality, integrity, and secure serial data transfer for embedded applications.
@@ -25,378 +27,193 @@ The complete RSA-over-UART flow works as follows:
 1) Plaintext Input
 User enters plaintext (8-bit or higher depending on implementation).
 2) RSA Key Generation
-- Select primes p and q
-- Compute modulus:
+     - Select primes p and q
+     - Compute modulus:
 
-  n=p×q
-- Compute totient:
+        n=p×q
+     - Compute totient:
 
-  ϕ(n)=(p−1)(q−1)
-- Choose public exponent e 
-- Compute private exponent:
+        ϕ(n)=(p−1)(q−1)
+     - Choose public exponent e 
+     - Compute private exponent:
 
-  d=e⁻¹modϕ(n)
+        d=e⁻¹modϕ(n)
 
 3) RSA Encryption
 Sender computes ciphertext:
 
    C = (M^e) mod n 
 
-UART Transmission
+4) UART Transmission
 UART-TX serializes ciphertext by adding:
-
-Start bit
-
-8/9 data bits
-
-Stop bit
+     - Start bit
+     - 8 data bits
+     - Stop bit
 and transmits it over TX line.
 
-UART Reception
-UART-RX detects start bit, samples data bits, validates stop bit, and reconstructs ciphertext.
+5) UART Reception:
+- UART-RX detects start bit, samples data bits, validates stop bit, and reconstructs ciphertext.
 
-RSA Decryption
+6) RSA Decryption
 Receiver computes:
 
-𝑀
-=
-𝐶
-𝑑
-m
-o
-d
- 
- 
-𝑛
-M=C
-d
-modn
+   M = C^d mod N
 
 The decrypted value matches the original plaintext, validating secure transmission.
 
-RSA Algorithm
+---
+
+## RSA Algorithm
+<img width="468" height="775" alt="image" src="https://github.com/user-attachments/assets/7f931fc0-680f-473c-9073-83d033cb94b8" />
+
 Key Generation Steps
 
-(From section II-A, page 1 of the paper) 
-
-Revised paper id_361
-
-Choose two primes: p, q
-
-Compute modulus:
-
-𝑛
-=
-𝑝
-×
-𝑞
-n=p×q
-
-Compute totient:
-
-𝜙
-(
-𝑛
-)
-=
-(
-𝑝
-−
-1
-)
-(
-𝑞
-−
-1
-)
-ϕ(n)=(p−1)(q−1)
-
-Choose public exponent e such that
-
-1
-<
-𝑒
-<
-𝜙
-(
-𝑛
-)
-,
-  
-gcd
-⁡
-(
-𝑒
-,
-𝜙
-(
-𝑛
-)
-)
-=
-1
-1<e<ϕ(n),gcd(e,ϕ(n))=1
-
-Compute private exponent:
-
-𝑑
-=
-𝑒
-−
-1
-m
-o
-d
- 
- 
-𝜙
-(
-𝑛
-)
-d=e
-−1
-modϕ(n)
-
+   - Choose two primes: p, q
+   - Compute modulus:
+            n=p×q
+   - Compute totient:
+            ϕ(n)=(p−1)(q−1)
+   - Choose public exponent e such that
+          1<e<ϕ(n), gcd(e,ϕ(n))=1
+   - Compute private exponent:
+          d=e⁻¹modϕ(n)
+     
 Public key = (e, n)
 Private key = (d, n)
 
-RSA Encryption Equation
-𝐶
-=
-𝑀
-𝑒
-m
-o
-d
- 
- 
-𝑛
-C=M
-e
-modn
+- Encryption and decryption are of the following form, for some plaintext M and ciphertext C: <br>
+    - C = M<sup>e</sup>(mod n) 
+    - M = C<sup>d</sup>(mod n) = (M<sup>e</sup>)<sup>d</sup>(mod n) = M<sup>ed</sup>(mod n)
 
-(Equation (1) in paper) 
-
-Revised paper id_361
-
-RSA Decryption Equation
-𝑀
-=
-𝐶
-𝑑
-m
-o
-d
- 
- 
-𝑛
-M=C
-d
-modn
-
-(Equation (2) in paper) 
-
-Revised paper id_361
-
-UART Communication Overview
-
+## UART Communication Overview
 UART is a serial, asynchronous protocol used for TX/RX between systems. It frames each data byte with:
+- Start bit (0)
+- Data bits (LSB first)
+- Optional parity
+- Stop bit (1)
 
-Start bit (0)
-
-Data bits (LSB first)
-
-Optional parity
-
-Stop bit (1)
-
-Reference: Section III of the paper 
-
-Revised paper id_361
-
-UART features:
-
-Parallel-to-serial conversion
-
-Baud rate synchronization
-
-Error detection (parity, framing errors)
-
-Full-duplex operation
-
-Flow control (RTS/CTS)
+### UART features:
+- Parallel-to-serial conversion
+- Baud rate synchronization
+- Error detection (parity, framing errors)
+- Full-duplex operation
+- Flow control (RTS/CTS)
 
 UART is ideal for FPGA-to-FPGA or FPGA-to-microcontroller communication.
 
-System Architecture
+---
 
-The RSA-over-UART system consists of the following modules (Figure 4 in the paper) 
-
-Revised paper id_361
-
-:
-
-1. RSA Key Generator
-
-Computes n, φ(n), e, d
-
-2. RSA Encryption Module
-
-Implements modular exponentiation:
-
-𝐶
-=
-𝑀
-𝑒
-m
-o
-d
- 
- 
-𝑛
-C=M
-e
-modn
-3. RSA Decryption Module
-
-Computes:
-
-𝑀
-=
-𝐶
-𝑑
-m
-o
-d
- 
- 
-𝑛
-M=C
-d
-modn
-4. UART Transmitter
-
-Adds start/stop bits
-
-Serializes ciphertext
-
-5. UART Receiver
-
-Detects start bit
-
-Samples bits
-
-Validates stop bit
-
-Sends ciphertext to decryption unit
-
-6. Control Logic
-
-Synchronizes data flow between RSA and UART.
-
-Simulation Results
-Example 1 (From Fig. 6) 
-
-Revised paper id_361
-
+## Simulation Results
+Example 1: 
 Plaintext = 43
-
 p = 17, q = 23
-
 Public key = (3, 391)
-
 Private key = (235, 391)
-
 Ciphertext = 134
-
 Decrypted = 43
+<img width="1600" height="786" alt="Screenshot-3" src="https://github.com/user-attachments/assets/d31981f9-1d6c-4ee5-8940-168db86de841" />
 
-✔ RSA works
-✔ UART RX receives same ciphertext
-✔ Decrypted = Plaintext → Correct
 
-Example 2 (From Fig. 7) 
+   - UART RX receives same ciphertext
+   - Decrypted = Plaintext 
 
-Revised paper id_361
-
+Example 2 
 Plaintext = 78
-
 p = 23, q = 41
-
 Public key = (3, 943)
-
 Private key = (587, 943)
-
 Ciphertext = 223
-
 Decrypted = 78
+<img width="1600" height="786" alt="Screenshot-6" src="https://github.com/user-attachments/assets/cfa960c2-9106-4f8c-ac0e-c81897438783" />
 
-✔ Secure round-trip transmission successful
+   - UART RX receives same ciphertext
+   - Decrypted = Plaintext 
 
-Synthesis and Resource Utilization
+---
 
-Based on Spartan-3 XC3S400-TQ144 (Tables on page 4–5) 
+## Synthesis and Resource Utilization
+Based on Spartan-3 XC3S400-TQ144
 
-Revised paper id_361
 
-:
+### Utilization Summary
+| Resource             | Used | Available | Utilization |
+| -------------------- | ---- | --------- | ----------- |
+| Logic Slices         | 10   | 3584      | 0%          |
+| LUTs                 | 17   | 7168      | 0%          |
+| Flip-Flops           | 8    | —         | —           |
+| Bonded IOBs          | 27   | 97        | 27%         |
+| Global Clock Buffers | 1    | 8         | 12%         |
 
-Utilization Summary
-Resource	Used	Available	Utilization
-Logic Slices	10	3584	0%
-LUTs	17	7168	0%
-Flip-Flops	8	—	—
-Bonded IOBs	27	97	27%
-Global Clock Buffers	1	8	12%
-Timing Analysis
-Parameter	Value
-Min Input Arrival Time	6.491 ns
-Max Output Delay	7.078 ns
-Clock Source	BUFGP
+### Timing Analysis
+| Parameter              | Value    |
+| ---------------------- | -------- |
+| Min Input Arrival Time | 6.491 ns |
+| Max Output Delay       | 7.078 ns |
+| Clock Source           | BUFGP    |
+
 
 Conclusion:
-✔ Supports UART baud rates 9600–115200 bps
-✔ Very low resource usage
-✔ Efficient and fast modular arithmetic implementation
+- Supports UART baud rates 9600–115200 bps
+- Very low resource usage
+- Efficient and fast modular arithmetic implementation
 
-FPGA Hardware Implementation
+## FPGA Hardware Implementation
 
-The system was deployed on two FPGA boards (Fig. 9) 
+The complete RSA-over-UART system was implemented on a **FPGA board**.  
+All modules — RSA key generation, RSA encryption, UART transmission, UART reception, and RSA decryption — were integrated and tested on one device.
 
-Revised paper id_361
+### Hardware Flow:
+1. Plaintext is given as input to the FPGA.
+2. RSA Encryption module encrypts the plaintext.
+3. Encrypted data is passed through the UART transmitter.
+4. UART receiver captures the serialized ciphertext.
+5. RSA Decryption module recovers the original plaintext.
+6. Output is displayed and verified on LEDs/monitoring interface.
 
-:
+<img width="448" height="260" alt="image" src="https://github.com/user-attachments/assets/32d7579c-85d5-48b2-a0c1-4cd8981e23e0" />
 
-Board 1 — Plaintext Input + RSA Encryption + UART Transmission
+### Validation:
+- Ciphertext is successfully generated.
+- UART correctly transfers encrypted data internally.
+- Decrypted output matches the original plaintext.
+- LED indicators confirm system functionality.
 
-Board 2 — UART Reception + RSA Decryption + Output Display
+<img width="478" height="321" alt="image" src="https://github.com/user-attachments/assets/63050b42-13ad-4f19-8d2f-69862064e4f5" />
 
-LED patterns verify:
+### GPIO Usage:
+- UART TX/RX pins  
+- 8 pins for plaintext input  
+- 8 pins for decrypted output  
+- LED pins for visual verification  
+- Clock and reset inputs  
 
-Successful ciphertext transmission
+This confirms that the **entire RSA-over-UART pipeline works correctly on a FPGA board**, without requiring multiple devices.
 
-Correct decryption
+---
 
-End-to-end integrity
-
-GPIO usage includes:
-
-UART TX/RX pins
-
-8 pins for plaintext
-
-8 pins for decrypted output
-
-Multiple LED status pins
-
-Conclusion
+## Conclusion
 
 This project successfully demonstrates secure UART communication using RSA implemented entirely in hardware.
-
-✔ RSA key generation, encryption, and decryption implemented in Verilog
-✔ UART TX/RX integrated for real serial communication
-✔ Synthesized and deployed on Spartan-3 FPGA
-✔ Waveforms validate correctness
-✔ Hardware demonstration validates real-world applicability
+- RSA key generation, encryption, and decryption implemented in Verilog
+- UART TX/RX integrated for real serial communication
+- Synthesized and deployed on Spartan-3 FPGA
+- Waveforms validate correctness
+- Hardware demonstration validates real-world applicability
 
 The system provides an FPGA-based secure communication framework suitable for IoT devices, embedded systems, automation, and authentication protocols.
+
+---
+
+## Publication
+
+This project is based on our research work **published in the IEEE Proceedings of ICECER 2025** under the title:
+
+**“Design and Development of UART Communication Over RSA Encryption”**
+
+Authors:  
+Dr. Vasudeva G, Dr. Mallikarjun P Y, Prof. Mahadev S,  
+Dr. Tripti R Kulkarni, Dr. Bharathi Gururaj,  
+**Hemanth Kumar M.M**, Abhishek H.J  
+
+The implementation, simulation results, and analysis presented in this repository are aligned with the methods and findings described in the IEEE paper.
+
